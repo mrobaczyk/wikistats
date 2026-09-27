@@ -12,7 +12,8 @@
     '14': 'Category', '15': 'Category talk', 
     '110': 'Forum', '111': 'Forum talk',
     '420': 'Gadget', '421': 'Gadget talk', '500': 'User blog', '501': 'User blog comment',
-    '828': 'Module', '829': 'Module talk', '1200': 'Message Wall', '1201': 'Thread'
+    '828': 'Module', '829': 'Module talk', '1200': 'Message Wall', '1201': 'Thread',
+    '2000': 'Board', '2001': 'Board thread'
   };
   const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const charts = new Map();
