@@ -258,9 +258,9 @@
             titleFont: { family: 'Manrope' }, bodyFont: { family: 'Manrope' },
             callbacks: {
               label(context) {
-                const value = context.parsed?.y ?? context.parsed?.x ?? context.parsed ?? context.raw;
+                const value = context.parsed?.y ?? context.parsed?.x ?? (typeof context.parsed === 'number' ? context.parsed : context.raw);
                 const label = context.dataset.label || context.label || 'Edits';
-                return `${label}: ${Number(value).toLocaleString('en-US')} edits`;
+                return `${label}: ${Number(value).toLocaleString('en-US')} ${context.dataset.unit || 'edits'}`;
               }
             }
           },
@@ -270,7 +270,31 @@
           x: { grid: { color: '#edf0ed' }, ticks: { color: '#7e8983', font: { family: 'DM Mono', size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }, ...(config.options?.scales?.x || {}) },
           y: { beginAtZero: true, grid: { color: '#edf0ed' }, ticks: { color: '#7e8983', font: { family: 'DM Mono', size: 9 } }, ...(config.options?.scales?.y || {}) }
         },
-        ...(config.options || {})
+        ...(config.options || {}),
+        plugins: {
+          ...(config.options?.plugins || {}),
+          legend: {
+            labels: {
+              color: '#65736c', usePointStyle: true, boxWidth: 7,
+              font: { family: 'Manrope', size: 10 },
+              ...(config.options?.plugins?.legend?.labels || {})
+            },
+            ...(config.options?.plugins?.legend || {})
+          },
+          tooltip: {
+            backgroundColor: '#1d2825', padding: 10,
+            titleFont: { family: 'Manrope' }, bodyFont: { family: 'Manrope' },
+            ...(config.options?.plugins?.tooltip || {}),
+            callbacks: {
+              label(context) {
+                const value = context.parsed?.y ?? context.parsed?.x ?? context.parsed ?? context.raw;
+                const label = context.dataset.label || context.label || 'Edits';
+                return `${label}: ${Number(value).toLocaleString('en-US')} ${context.dataset.unit || 'edits'}`;
+              },
+              ...(config.options?.plugins?.tooltip?.callbacks || {})
+            }
+          }
+        }
       },
       plugins: [{
         id: 'whiteBackground',
@@ -292,7 +316,7 @@
   }
 
   function renderStats(main, bot, all) {
-    const pages = new Set(all.map((record) => record.title).filter(Boolean));
+    const pages = new Set(all.filter((record) => record.title).map((record) => `${record.ns}|${record.title}`));
     const sizedRecords = all.filter((record) => Number.isFinite(record.sizediff));
     const netBytes = sizedRecords.reduce((sum, record) => sum + record.sizediff, 0);
     const timestamps = all.map((record) => Date.parse(record.timestamp)).filter(Number.isFinite);
@@ -337,11 +361,12 @@
   function renderNamespaces(all) {
     const counts = new Map();
     all.forEach((record) => counts.set(record.ns, (counts.get(record.ns) || 0) + 1));
-    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
     createChart('namespaces-chart', 'namespaces', {
-      type: 'doughnut', data: { labels: entries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`), datasets: [{ data: entries.map(([, count]) => count), backgroundColor: entries.map((_, index) => PALETTE[index % PALETTE.length]), borderColor: '#fff', borderWidth: 2 }] },
+      type: 'doughnut', data: { labels: entries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`), datasets: [{ label: 'Edits', unit: 'edits', data: entries.map(([, count]) => count), backgroundColor: entries.map((_, index) => PALETTE[index % PALETTE.length]), borderColor: '#fff', borderWidth: 2 }] },
       options: {
-        cutout: '62%',
+        radius: '98%',
+        cutout: '48%',
         plugins: {
           legend: {
             position: 'bottom',
@@ -361,6 +386,31 @@
             }
           }
         }
+      }
+    });
+
+    const pagesByNamespace = new Map();
+    all.forEach((record) => {
+      if (!record.title) return;
+      if (!pagesByNamespace.has(record.ns)) pagesByNamespace.set(record.ns, new Set());
+      pagesByNamespace.get(record.ns).add(record.title);
+    });
+    const pageEntries = [...pagesByNamespace.entries()].sort((left, right) => right[1].size - left[1].size);
+    createChart('unique-pages-namespace-chart', 'unique-pages-namespace', {
+      type: 'doughnut',
+      data: {
+        labels: pageEntries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`),
+        datasets: [{
+          label: 'Unique pages', unit: 'unique pages',
+          data: pageEntries.map(([, titles]) => titles.size),
+          backgroundColor: pageEntries.map((_, index) => PALETTE[index % PALETTE.length]),
+          borderColor: '#fff', borderWidth: 2
+        }]
+      },
+      options: {
+        radius: '98%',
+        cutout: '48%',
+        plugins: { legend: { position: 'bottom', align: 'center', labels: { boxWidth: 8, padding: 10 } } }
       }
     });
   }
