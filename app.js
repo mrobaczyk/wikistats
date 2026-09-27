@@ -214,7 +214,6 @@
     localStorage.setItem('wiki-activity-settings', JSON.stringify({
       wiki: elements.wiki.value.trim(), mainUser: elements.mainUser.value.trim(), botUser: elements.botUser.value.trim()
     }));
-    $('#wiki-label').textContent = `${elements.wiki.value.trim()}.fandom.com`;
   }
 
   function loadSettings() {

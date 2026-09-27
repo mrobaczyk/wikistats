@@ -25,9 +25,6 @@ button { color: inherit; }
 .wordmark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-size: 13px; font-weight: 800; letter-spacing: 0; }
 .mark { display: grid; place-items: center; width: 28px; aspect-ratio: 1; background: var(--green); color: white; font-family: Georgia, serif; font-size: 17px; font-weight: 400; }
 .wordmark-light { color: var(--muted); font-weight: 500; }
-.topbar-right, .wiki-indicator { display: flex; align-items: center; gap: 12px; }
-.wiki-indicator { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #64a77f; box-shadow: 0 0 0 3px #64a77f24; }
 .icon-button { width: 34px; height: 34px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 16px; }
 main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
 .intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; padding: 34px 0 24px; border-bottom: 1px solid var(--line); }
@@ -36,7 +33,6 @@ main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
 .intro .eyebrow span { color: var(--muted); }
 h1 { margin: 12px 0 8px; font-size: clamp(36px, 4vw, 50px); line-height: 1.02; font-weight: 700; letter-spacing: 0; }
 h1 em { color: var(--green); font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
-.lede { margin: 0; color: var(--muted); font-size: 15px; }
 .intro-actions { display: flex; gap: 9px; padding-bottom: 3px; flex-shrink: 0; }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 40px; padding: 0 15px; border: 1px solid var(--line); cursor: pointer; font-size: 13px; font-weight: 700; transition: background .18s ease, transform .18s ease; }
 .button:hover { transform: translateY(-1px); }
@@ -101,10 +97,8 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 28px
 @media (max-width: 760px) {
   main { width: min(100% - 28px, 600px); }
   .topbar { height: 56px; padding: 0 14px; }
-  .wiki-indicator { font-size: 9px; }
   .intro { align-items: flex-start; flex-direction: column; padding: 22px 0 16px; gap: 12px; }
   h1 { margin: 9px 0 6px; font-size: clamp(36px, 10vw, 46px); }
-  .lede { max-width: 330px; line-height: 1.6; }
   .intro-actions { width: 100%; }
   .intro-actions .button { flex: 1; }
   .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
