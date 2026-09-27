@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f3">
+  <title>Wiki Activity | Civilization Wiki</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="#top" aria-label="Wiki Activity home">
+      <span class="mark" aria-hidden="true">W</span>
+      <span>WIKI<span class="wordmark-light"> / ACTIVITY</span></span>
+    </a>
+    <div class="topbar-right">
+      <span class="wiki-indicator"><span class="status-dot"></span><span id="wiki-label">civilization.fandom.com</span></span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="intro">
+      <div class="intro-copy">
+        <p class="eyebrow">WIKI ANALYTICS <span id="last-updated">LOCAL DATA</span></p>
+        <h1>Every edit,<br><em>in perspective.</em></h1>
+        <p class="lede">A clear view of editor activity on Civilization Wiki.</p>
+      </div>
+      <div class="intro-actions">
+        <button class="button button-primary" id="sync-button" type="button"><span aria-hidden="true">↻</span> Sync latest</button>
+        <button class="button button-secondary" id="full-sync-button" type="button" title="Fetch the complete contribution history"><span aria-hidden="true">⇩</span> Full history</button>
+      </div>
+    </section>
+
+    <section class="settings-panel" id="settings-panel" aria-label="Data source">
+      <p class="eyebrow">DATA SOURCE</p>
+      <div class="settings-grid">
+        <label class="field"><span>Wiki subdomain</span><div class="input-with-suffix"><input id="wiki-input" value="civilization" autocomplete="off"><span>.fandom.com</span></div></label>
+        <label class="field"><span>Main account</span><input id="main-user-input" value="Robal91" autocomplete="off"></label>
+        <label class="field"><span>Bot account <small>optional</small></span><input id="bot-user-input" value="RobalBot" autocomplete="off"></label>
+      </div>
+      <div class="data-tools">
+        <span class="tools-label">DATA</span>
+        <label class="file-button">Import main JSON<input id="main-file-input" type="file" accept="application/json,.json"></label>
+        <label class="file-button">Import bot JSON<input id="bot-file-input" type="file" accept="application/json,.json"></label>
+        <button class="text-button" id="export-main-json" type="button">Export main JSON ↓</button>
+        <button class="text-button" id="export-bot-json" type="button">Export bot JSON ↓</button>
+      </div>
+      <p class="settings-note">Data is stored in this browser. Export JSON to save it as files or move it to another device.</p>
+    </section>
+
+    <section class="status-row" aria-live="polite">
+      <p id="status-message">Loading saved data…</p>
+      <span id="sync-detail"></span>
+    </section>
+
+    <section class="stats-grid" aria-label="Activity summary">
+      <article class="stat-block stat-primary"><p>TOTAL EDITS</p><strong id="stat-edits">—</strong><span id="stat-edits-note">main account and bot</span></article>
+      <article class="stat-block"><p>UNIQUE PAGES</p><strong id="stat-pages">—</strong><span>distinct edited titles</span></article>
+      <article class="stat-block"><p>SIZE CHANGE</p><strong id="stat-bytes">—</strong><span>net, where size data is available</span></article>
+      <article class="stat-block"><p>ACTIVE PERIOD</p><strong id="stat-period">—</strong><span id="stat-period-note">from first to latest edit</span></article>
+    </section>
+
+    <section class="section-heading">
+      <div><p class="eyebrow">ACTIVITY BREAKDOWN</p><h2>Editing patterns</h2></div>
+      <span class="section-meta" id="record-count">0 records</span>
+    </section>
+    <section class="charts-grid">
+      <article class="chart-panel chart-wide">
+        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits and a 30-day moving average</p></div><button class="download-chart" data-chart="timeline" type="button" aria-label="Download activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-canvas"><canvas id="timeline-chart" aria-label="Edits over time chart"></canvas></div>
+      </article>
+      <article class="chart-panel">
+        <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits in each namespace</p></div><button class="download-chart" data-chart="namespaces" type="button" aria-label="Download namespace chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-canvas chart-canvas-short"><canvas id="namespaces-chart" aria-label="Edits by namespace chart"></canvas></div>
+      </article>
+      <article class="chart-panel">
+        <div class="chart-heading"><div><h3>Most edited pages</h3><p>20 pages with the most edits</p></div><button class="download-chart" data-chart="pages" type="button" aria-label="Download most edited pages chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-canvas chart-canvas-tall"><canvas id="pages-chart" aria-label="Most edited pages chart"></canvas></div>
+      </article>
+      <article class="chart-panel">
+        <div class="chart-heading"><div><h3>Edit size</h3><p>Byte-size change per edit</p></div><button class="download-chart" data-chart="sizes" type="button" aria-label="Download edit size chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-canvas chart-canvas-short"><canvas id="sizes-chart" aria-label="Edit size histogram"></canvas></div>
+      </article>
+      <article class="chart-panel chart-wide">
+        <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div><button class="download-chart" data-chart="heatmap" type="button" aria-label="Download weekday and hour chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="heatmap-wrap"><canvas id="heatmap-chart" aria-label="Activity by weekday and hour heatmap"></canvas></div>
+      </article>
+      <article class="chart-panel chart-wide">
+        <div class="chart-heading"><div><h3>Monthly activity</h3><p>Compare the main account and bot</p></div><button class="download-chart" data-chart="monthly" type="button" aria-label="Download monthly activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-canvas"><canvas id="monthly-chart" aria-label="Monthly edits chart"></canvas></div>
+      </article>
+    </section>
+
+    <footer><span>WIKI ACTIVITY <span class="footer-separator">/</span> CIVILIZATION WIKI</span><span>Based on contribution history · edits without sizediff are excluded from size statistics</span></footer>
+  </main>
+</body>
+</html>
