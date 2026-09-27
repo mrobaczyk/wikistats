@@ -253,7 +253,17 @@
         animation: { duration: 350 },
         plugins: {
           legend: { labels: { color: '#65736c', usePointStyle: true, boxWidth: 7, font: { family: 'Manrope', size: 10 } } },
-          tooltip: { backgroundColor: '#1d2825', padding: 10, titleFont: { family: 'Manrope' }, bodyFont: { family: 'Manrope' } },
+          tooltip: {
+            backgroundColor: '#1d2825', padding: 10,
+            titleFont: { family: 'Manrope' }, bodyFont: { family: 'Manrope' },
+            callbacks: {
+              label(context) {
+                const value = context.parsed?.y ?? context.parsed?.x ?? context.parsed ?? context.raw;
+                const label = context.dataset.label || context.label || 'Edits';
+                return `${label}: ${Number(value).toLocaleString('en-US')} edits`;
+              }
+            }
+          },
           ...(config.options?.plugins || {})
         },
         scales: config.type === 'doughnut' ? undefined : {
@@ -382,6 +392,24 @@
     });
   }
 
+  function showCanvasTooltip(event, title, count) {
+    const tooltip = $('#chart-tooltip');
+    const heading = document.createElement('strong');
+    const detail = document.createElement('span');
+    heading.textContent = title;
+    detail.textContent = `${count.toLocaleString('en-US')} edits`;
+    tooltip.replaceChildren(heading, detail);
+    tooltip.hidden = false;
+    const left = Math.min(event.clientX + 12, window.innerWidth - tooltip.offsetWidth - 8);
+    const top = Math.min(event.clientY + 12, window.innerHeight - tooltip.offsetHeight - 8);
+    tooltip.style.left = `${Math.max(8, left)}px`;
+    tooltip.style.top = `${Math.max(8, top)}px`;
+  }
+
+  function hideCanvasTooltip() {
+    $('#chart-tooltip').hidden = true;
+  }
+
   function renderHeatmap(all) {
     const canvas = $('#heatmap-chart');
     const rect = canvas.getBoundingClientRect();
@@ -423,6 +451,105 @@
     context.fillStyle = '#7e8983';
     context.textAlign = 'center';
     for (let hour = 0; hour < 24; hour += 3) context.fillText(String(hour).padStart(2, '0'), left + hour * cellWidth + cellWidth / 2, height - 11);
+
+    canvas.onpointermove = (event) => {
+      const bounds = canvas.getBoundingClientRect();
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      const hour = Math.floor((x - left) / cellWidth);
+      const weekday = Math.floor((y - top) / cellHeight);
+      if (hour < 0 || hour >= 24 || weekday < 0 || weekday >= 7) { hideCanvasTooltip(); return; }
+      showCanvasTooltip(event, `${DAY_LABELS[weekday]} · ${String(hour).padStart(2, '0')}:00–${String(hour + 1).padStart(2, '0')}:00`, matrix[weekday][hour]);
+    };
+    canvas.onpointerleave = hideCanvasTooltip;
+  }
+
+  function renderCalendarHeatmap(all) {
+    const canvas = $('#calendar-chart');
+    const wrapper = $('#calendar-wrap');
+    const daily = new Map();
+    const timestamps = [];
+    all.forEach((record) => {
+      const date = new Date(record.timestamp);
+      if (!Number.isFinite(date.getTime())) return;
+      timestamps.push(date.getTime());
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      daily.set(key, (daily.get(key) || 0) + 1);
+    });
+
+    const ratio = window.devicePixelRatio || 1;
+    const cellSize = 11;
+    const gap = 3;
+    const step = cellSize + gap;
+    const left = 34;
+    const top = 20;
+    const today = new Date();
+    let start;
+    if (timestamps.length) {
+      const earliest = new Date(Math.min(...timestamps));
+      start = new Date(earliest.getFullYear(), 0, 1);
+    } else {
+      start = new Date(today.getFullYear(), 0, 1);
+    }
+    const firstDayOffset = (start.getDay() + 6) % 7;
+    start.setDate(start.getDate() - firstDayOffset);
+    const dayCount = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())) / 86400000) + 1;
+    const weekCount = Math.ceil(dayCount / 7);
+    const width = left + weekCount * step + 8;
+    const height = top + 7 * step + 5;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.ceil(width * ratio);
+    canvas.height = Math.ceil(height * ratio);
+    wrapper.style.height = `${height}px`;
+    const context = canvas.getContext('2d');
+    context.scale(ratio, ratio);
+    context.font = '10px Manrope, sans-serif';
+    context.textBaseline = 'middle';
+    context.fillStyle = '#7e8983';
+    context.textAlign = 'right';
+    DAY_LABELS.forEach((day, row) => {
+      if (row % 2 === 0) context.fillText(day, left - 7, top + row * step + cellSize / 2);
+    });
+
+    const cells = [];
+    let previousMonth = -1;
+    const maximum = Math.max(1, ...daily.values());
+    for (let dayIndex = 0; dayIndex < dayCount; dayIndex += 1) {
+      const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + dayIndex);
+      const column = Math.floor(dayIndex / 7);
+      const row = dayIndex % 7;
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const count = daily.get(key) || 0;
+      const x = left + column * step;
+      const y = top + row * step;
+      const intensity = count / maximum;
+      context.fillStyle = count === 0 ? '#edf1ed' : intensity > .65 ? '#176d54' : intensity > .3 ? '#69a98a' : intensity > .08 ? '#a9d0b8' : '#d8e9dd';
+      context.beginPath();
+      context.roundRect(x, y, cellSize, cellSize, 2);
+      context.fill();
+      cells.push({ x, y, date, count });
+      if (date.getMonth() !== previousMonth && row <= 3) {
+        context.fillStyle = '#7e8983';
+        context.textAlign = 'left';
+        context.fillText(date.toLocaleString('en-US', { month: 'short' }), x, 9);
+        previousMonth = date.getMonth();
+      }
+    }
+
+    canvas.onpointermove = (event) => {
+      const bounds = canvas.getBoundingClientRect();
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      const column = Math.floor((x - left) / step);
+      const row = Math.floor((y - top) / step);
+      if (column < 0 || column >= weekCount || row < 0 || row >= 7) { hideCanvasTooltip(); return; }
+      const cell = cells[column * 7 + row];
+      if (!cell || x < cell.x || x > cell.x + cellSize || y < cell.y || y > cell.y + cellSize) { hideCanvasTooltip(); return; }
+      showCanvasTooltip(event, cell.date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }), cell.count);
+    };
+    canvas.onpointerleave = hideCanvasTooltip;
+    wrapper.scrollLeft = wrapper.scrollWidth;
   }
 
   async function render() {
@@ -443,6 +570,7 @@
     renderSizes(all);
     renderMonthly(main, bot || { contributions: [] });
     renderHeatmap(all);
+    renderCalendarHeatmap(all);
   }
 
   function downloadBlob(blob, filename) {
@@ -482,6 +610,10 @@
       $('#heatmap-chart').toBlob((blob) => { if (blob) downloadBlob(blob, 'fandom_activity_hours.png'); });
       return;
     }
+    if (key === 'calendar') {
+      $('#calendar-chart').toBlob((blob) => { if (blob) downloadBlob(blob, 'fandom_activity_calendar.png'); });
+      return;
+    }
     const chart = charts.get(key);
     if (!chart) { setStatus('Wykres nie jest jeszcze gotowy do pobrania.'); return; }
     const link = document.createElement('a');
@@ -502,6 +634,7 @@
     document.querySelectorAll('.download-chart').forEach((button) => button.addEventListener('click', () => downloadChart(button.dataset.chart)));
     window.addEventListener('resize', () => {
       if ($('#heatmap-chart').width) renderHeatmap(currentContributions);
+      if ($('#calendar-chart').width) renderCalendarHeatmap(currentContributions);
     });
 
     try {

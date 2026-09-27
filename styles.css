@@ -85,6 +85,13 @@ h2 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
 .chart-canvas-tall { height: 450px; }
 .heatmap-wrap { height: 270px; margin-top: 12px; }
 .heatmap-wrap canvas { display: block; width: 100%; height: 100%; }
+.heatmap-wrap canvas, .calendar-wrap canvas { cursor: crosshair; }
+.calendar-wrap { height: 126px; margin-top: 12px; overflow: auto hidden; overscroll-behavior-inline: contain; }
+.calendar-wrap canvas { display: block; }
+.chart-tooltip { position: fixed; z-index: 20; display: grid; gap: 3px; max-width: min(240px, calc(100vw - 16px)); padding: 8px 10px; background: #1d2825; color: white; box-shadow: 0 3px 12px #1d282533; pointer-events: none; font-size: 10px; line-height: 1.4; }
+.chart-tooltip[hidden] { display: none; }
+.chart-tooltip strong { font-size: 10px; font-weight: 700; }
+.chart-tooltip span { color: #cbd7d0; font-family: 'DM Mono', monospace; }
 footer { display: flex; justify-content: space-between; gap: 18px; padding: 28px 0 35px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 9px; }
 .footer-separator { padding: 0 5px; color: var(--coral); }
 @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
