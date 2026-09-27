@@ -4,9 +4,9 @@ A static dashboard for contribution statistics from a Fandom wiki. It runs on Gi
 
 ## Deploy to GitHub Pages
 
-1. Push the application files to your repository.
-2. In GitHub, open **Settings → Pages** and select the branch and folder containing `index.html`.
-3. Open the Pages URL over HTTPS and enter the wiki subdomain and account names in the visible **Data source** section.
+The workflow in `.github/workflows/deploy.yml` publishes the repository root to GitHub Pages on every push to `main`. It can also be started manually from the repository's **Actions** tab. In **Settings → Pages**, select **GitHub Actions** as the build and deployment source if it is not already selected.
+
+After the first successful deployment, open the Pages URL over HTTPS and enter the wiki subdomain and account names in the visible **Data source** section.
 
 For local testing, serve the folder over HTTP. Do not open `index.html` as `file://`; browsers restrict API access and IndexedDB in that mode.
 
@@ -16,7 +16,7 @@ For local testing, serve the folder over HTTP. Do not open `index.html` as `file
 - Later syncs request contributions newer than the newest cached timestamp and merge them without duplicates.
 - **Full history** fetches the complete available history again. Use it to fill older imported records with `sizediff` and `comment` fields.
 - Browser cache is separated by wiki subdomain and account name. It does not transfer automatically to another browser or device.
-- Import and export JSON to move data manually. Exported files can be committed alongside `index.html`; the app will try to load them as initial data when published.
+- Import and export JSON to move data manually. Exported files are named with their account, for example `fandom_edits_Robal91.json` and `fandom_edits_RobalBot.json`; the app loads these two published files as initial data for their matching accounts only.
 
 GitHub Pages only serves static files, so the app cannot write changes directly back to the repository. Sync stores data in browser IndexedDB; exporting JSON is an explicit download.
 

@@ -174,8 +174,8 @@
 
   async function seedFromPublishedFiles() {
     const candidates = [
-      { username: 'Robal91', file: 'fandom_edits.json' },
-      { username: 'RobalBot', file: 'fandom_edits_bot.json' }
+      { username: 'Robal91', file: 'fandom_edits_Robal91.json' },
+      { username: 'RobalBot', file: 'fandom_edits_RobalBot.json' }
     ];
     for (const candidate of candidates) {
       if (!candidate.username || (await readCache(identity(candidate.username)))) continue;
@@ -402,7 +402,8 @@
     readCache(identity(username)).then((cached) => {
       if (!cached) { setStatus(`No saved data for ${username}.`); return; }
       const blob = new Blob([JSON.stringify(cached.contributions, null, 2)], { type: 'application/json' });
-      const filename = elements.botUser.value.trim() && username.toLowerCase() === elements.botUser.value.trim().toLowerCase() ? 'fandom_edits_bot.json' : 'fandom_edits.json';
+      const accountFileName = username.replace(/[^a-z0-9_-]/gi, '_');
+      const filename = `fandom_edits_${accountFileName}.json`;
       downloadBlob(blob, filename);
       setStatus(`Exported data for ${username}.`, `${cached.contributions.length.toLocaleString('en-US')} records`);
     }).catch((error) => setStatus(`Export failed: ${error.message}`));
