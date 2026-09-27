@@ -340,7 +340,28 @@
     const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
     createChart('namespaces-chart', 'namespaces', {
       type: 'doughnut', data: { labels: entries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`), datasets: [{ data: entries.map(([, count]) => count), backgroundColor: entries.map((_, index) => PALETTE[index % PALETTE.length]), borderColor: '#fff', borderWidth: 2 }] },
-      options: { cutout: '62%', plugins: { legend: { position: window.matchMedia('(max-width: 760px)').matches ? 'bottom' : 'right', labels: { boxWidth: 8, padding: 10 } } } }
+      options: {
+        cutout: '62%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 8,
+              padding: 10,
+              generateLabels(chart) {
+                const defaultLabels = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
+                const columnCount = window.matchMedia('(max-width: 760px)').matches ? 2 : 3;
+                const rowCount = Math.ceil(defaultLabels.length / columnCount);
+                return defaultLabels.map((label, index) => ({
+                  ...label,
+                  _gridRow: index % rowCount,
+                  _gridColumn: Math.floor(index / rowCount)
+                }));
+              }
+            }
+          }
+        }
+      }
     });
   }
 
