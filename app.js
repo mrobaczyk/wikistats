@@ -9,7 +9,7 @@
     '-2': 'Media', '-1': 'Special', '0': 'Main', '1': 'Talk', '2': 'User', '3': 'User talk',
     '4': 'Civilization Wiki', '5': 'Civilization Wiki talk', '6': 'File', '7': 'File talk', '8': 'MediaWiki',
     '9': 'MediaWiki talk', '10': 'Template', '11': 'Template talk', '12': 'Help', '13': 'Help talk',
-    '14': 'Category', '15': 'Category talk', '420': 'Gadget', '421': 'Gadget talk', '828': 'Module', '829': 'Module talk'
+    '14': 'Category', '15': 'Category talk', '420': 'Gadget', '421': 'Gadget talk', '500': 'User blog', '828': 'Module', '829': 'Module talk'
   };
   const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const charts = new Map();
@@ -69,14 +69,66 @@
 
   function contributionKey(record) {
     if (record.revid) return `rev:${record.revid}`;
-    return `${record.user || ''}|${record.timestamp || ''}|${record.title || ''}|${record.sizediff ?? ''}`;
+    if (!record.timestamp || !record.title) return `raw:${JSON.stringify(record)}`;
+    const user = String(record.userid || record.user || '').toLowerCase();
+    return `legacy:${user}|${record.timestamp}|${record.ns ?? ''}|${record.title}`;
+  }
+
+  function contributionFingerprint(record) {
+    if (!record.timestamp || !record.title) return null;
+    const user = String(record.userid || record.user || '').toLowerCase();
+    return `${user}|${record.timestamp}|${record.ns ?? ''}|${record.title}`;
   }
 
   function mergeContributions(existing, incoming, username) {
     const merged = new Map();
-    for (const record of [...existing, ...incoming]) {
+    const legacyKeys = new Map();
+    const revisionKeys = new Map();
+
+    for (const record of existing) {
       const normalized = normalizeContribution(record, username);
-      merged.set(contributionKey(normalized), normalized);
+      const key = contributionKey(normalized);
+      const fingerprint = contributionFingerprint(normalized);
+      if (normalized.revid) {
+        merged.set(key, { ...merged.get(key), ...normalized });
+        if (fingerprint) revisionKeys.set(fingerprint, [...(revisionKeys.get(fingerprint) || []), key]);
+      } else if (fingerprint && legacyKeys.has(fingerprint)) {
+        const legacyKey = legacyKeys.get(fingerprint);
+        merged.set(legacyKey, { ...merged.get(legacyKey), ...normalized });
+      } else {
+        merged.set(key, normalized);
+        if (fingerprint) legacyKeys.set(fingerprint, key);
+      }
+    }
+
+    for (const record of incoming) {
+      const normalized = normalizeContribution(record, username);
+      const key = contributionKey(normalized);
+      const fingerprint = contributionFingerprint(normalized);
+      if (normalized.revid) {
+        if (merged.has(key)) {
+          merged.set(key, { ...merged.get(key), ...normalized });
+        } else if (fingerprint && legacyKeys.has(fingerprint)) {
+          const legacyKey = legacyKeys.get(fingerprint);
+          merged.set(key, { ...merged.get(legacyKey), ...normalized });
+          merged.delete(legacyKey);
+          legacyKeys.delete(fingerprint);
+        } else {
+          merged.set(key, normalized);
+        }
+        if (fingerprint) revisionKeys.set(fingerprint, [...(revisionKeys.get(fingerprint) || []), key]);
+      } else if (merged.has(key)) {
+        merged.set(key, { ...merged.get(key), ...normalized });
+      } else {
+        const matchingRevisions = fingerprint ? [...new Set(revisionKeys.get(fingerprint) || [])] : [];
+        if (matchingRevisions.length === 1) {
+          const revisionKey = matchingRevisions[0];
+          merged.set(revisionKey, { ...merged.get(revisionKey), ...normalized });
+        } else {
+          merged.set(key, normalized);
+          if (fingerprint) legacyKeys.set(fingerprint, key);
+        }
+      }
     }
     return [...merged.values()].sort((left, right) => Date.parse(right.timestamp) - Date.parse(left.timestamp));
   }
@@ -84,7 +136,7 @@
   async function fetchContributions(username, since, onPage) {
     const params = new URLSearchParams({
       action: 'query', list: 'usercontribs', ucuser: username, uclimit: 'max',
-      ucprop: 'timestamp|title|sizediff|comment', format: 'json', origin: '*'
+      ucprop: 'ids|timestamp|title|sizediff|comment', format: 'json', origin: '*'
     });
     if (since) {
       params.set('ucstart', new Date().toISOString());
@@ -122,7 +174,7 @@
     const fresh = await fetchContributions(username, since, (page, count) => {
       setStatus(`${role}: fetching ${since ? 'recent edits' : 'history'}…`, `${count.toLocaleString('en-US')} records · page ${page}`);
     });
-    const combined = mergeContributions(existing, fresh, username);
+    const combined = mergeContributions(fullHistory ? [] : existing, fresh, username);
     await writeCache(id, username, combined);
     return { count: fresh.length, total: combined.length, username };
   }
@@ -286,7 +338,7 @@
     const maxLabelLength = window.matchMedia('(max-width: 760px)').matches ? 22 : 32;
     createChart('pages-chart', 'pages', {
       type: 'bar', data: { labels: entries.map(([title]) => title), datasets: [{ label: 'Edits', data: entries.map(([, count]) => count), backgroundColor: '#176d54', borderRadius: 2, barThickness: 12 }] },
-      options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } }, y: { reverse: true, grid: { display: false }, ticks: { autoSkip: false, callback(value) { const label = this.getLabelForValue(value); return label.length > maxLabelLength ? `${label.slice(0, maxLabelLength - 1)}…` : label; } } } } }
+      options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } }, y: { grid: { display: false }, ticks: { autoSkip: false, callback(value) { const label = this.getLabelForValue(value); return label.length > maxLabelLength ? `${label.slice(0, maxLabelLength - 1)}…` : label; } } } } }
     });
   }
 
