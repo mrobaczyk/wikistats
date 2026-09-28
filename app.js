@@ -23,12 +23,21 @@
   const $ = (selector) => document.querySelector(selector);
   const elements = {
     wiki: $('#wiki-input'), mainUser: $('#main-user-input'), botUser: $('#bot-user-input'),
-    status: $('#status-message'), detail: $('#sync-detail'), sync: $('#sync-button'), fullSync: $('#full-sync-button')
+    status: $('#status-message'), detail: $('#sync-detail'), spinner: $('#sync-spinner'),
+    stats: $('.stats-grid'), charts: $('.charts-grid'), sync: $('#sync-button'), fullSync: $('#full-sync-button')
   };
 
   function setStatus(message, detail = '') {
     elements.status.textContent = message;
     elements.detail.textContent = detail;
+  }
+
+  function setSyncPending(pending) {
+    elements.spinner.hidden = !pending;
+    for (const section of [elements.stats, elements.charts]) {
+      section.classList.toggle('data-stale', pending);
+      section.setAttribute('aria-busy', String(pending));
+    }
   }
 
   function identity(username) {
@@ -176,7 +185,7 @@
     const existing = cached?.contributions || [];
     const since = !fullHistory && existing.length ? newestTimestamp(existing) : null;
     const fresh = await fetchContributions(username, since, (page, count) => {
-      setStatus(`${role}: fetching ${since ? 'recent edits' : 'history'}…`, `${count.toLocaleString('en-US')} records · page ${page}`);
+      setStatus(`Showing saved data while ${role.toLowerCase()} updates…`, `${count.toLocaleString('en-US')} fetched · page ${page}`);
     });
     const combined = mergeContributions(fullHistory ? [] : existing, fresh, username);
     await writeCache(id, username, combined);
@@ -193,6 +202,8 @@
     saveSettings();
     elements.sync.disabled = true;
     elements.fullSync.disabled = true;
+    setSyncPending(true);
+    setStatus(`Showing saved data while ${fullHistory ? 'full history downloads' : 'updates download'}…`, 'Connecting to wiki API…');
     const started = Date.now();
     try {
       const results = await Promise.all([
@@ -206,6 +217,7 @@
     } catch (error) {
       setStatus(`Sync failed: ${error.message}`, 'Check the wiki name, connection, and API availability.');
     } finally {
+      setSyncPending(false);
       elements.sync.disabled = false;
       elements.fullSync.disabled = false;
     }
