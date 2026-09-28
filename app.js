@@ -287,7 +287,9 @@
             ...(config.options?.plugins?.tooltip || {}),
             callbacks: {
               label(context) {
-                const value = context.parsed?.y ?? context.parsed?.x ?? context.parsed ?? context.raw;
+                const value = context.chart.options.indexAxis === 'y'
+                  ? context.parsed?.x ?? context.raw
+                  : context.parsed?.y ?? context.parsed?.x ?? context.parsed ?? context.raw;
                 const label = context.dataset.label || context.label || 'Edits';
                 return `${label}: ${Number(value).toLocaleString('en-US')} ${context.dataset.unit || 'edits'}`;
               },
