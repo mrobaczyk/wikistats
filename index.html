@@ -64,35 +64,44 @@
     </section>
     <section class="charts-grid">
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits by account and 30-day rolling averages</p></div><button class="download-chart" data-chart="timeline" type="button" aria-label="Download activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits by account and 30-day rolling averages</p></div></div>
         <div class="chart-canvas"><canvas id="timeline-chart" aria-label="Edits over time chart"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Daily activity calendar</h3><p>Edits per day across your contribution history</p></div><button class="download-chart" data-chart="calendar" type="button" aria-label="Download calendar activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Daily activity calendar</h3><p>Edits per day across your contribution history</p></div></div>
         <div class="calendar-wrap" id="calendar-wrap"><canvas id="calendar-chart" aria-label="Calendar heatmap of daily edits"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Monthly activity</h3><p>Compare the main account and bot</p></div><button class="download-chart" data-chart="monthly" type="button" aria-label="Download monthly activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading chart-heading-period">
+          <div><h3>Activity by period</h3><p>Compare the main account and bot</p></div>
+          <div class="monthly-chart-tools">
+            <div class="segmented-control" role="group" aria-label="Activity aggregation period">
+              <button type="button" data-monthly-period="weekly" aria-pressed="false">Weekly</button>
+              <button type="button" data-monthly-period="monthly" aria-pressed="true">Monthly</button>
+              <button type="button" data-monthly-period="yearly" aria-pressed="false">Yearly</button>
+            </div>
+          </div>
+        </div>
         <div class="chart-canvas"><canvas id="monthly-chart" aria-label="Monthly edits chart"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div><button class="download-chart" data-chart="heatmap" type="button" aria-label="Download weekday and hour chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div></div>
         <div class="heatmap-wrap"><canvas id="heatmap-chart" aria-label="Activity by weekday and hour heatmap"></canvas></div>
       </article>
       <article class="chart-panel namespace-chart-panel">
-        <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits in each namespace</p></div><button class="download-chart" data-chart="namespaces" type="button" aria-label="Download namespace chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits in each namespace</p></div></div>
         <div class="chart-canvas chart-canvas-namespace"><canvas id="namespaces-chart" aria-label="Edits by namespace chart"></canvas></div>
       </article>
       <article class="chart-panel namespace-chart-panel">
-        <div class="chart-heading"><div><h3>Unique pages edited</h3><p>Distinct pages edited in each namespace</p></div><button class="download-chart" data-chart="unique-pages-namespace" type="button" aria-label="Download unique pages by namespace chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Unique pages edited</h3><p>Distinct pages edited in each namespace</p></div></div>
         <div class="chart-canvas chart-canvas-namespace"><canvas id="unique-pages-namespace-chart" aria-label="Unique pages edited by namespace chart"></canvas></div>
       </article>
       <article class="chart-panel">
-        <div class="chart-heading"><div><h3>Most edited pages</h3><p>20 pages with the most edits</p></div><button class="download-chart" data-chart="pages" type="button" aria-label="Download most edited pages chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Most edited pages</h3><p>20 pages with the most edits</p></div></div>
         <div class="chart-canvas chart-canvas-tall"><canvas id="pages-chart" aria-label="Most edited pages chart"></canvas></div>
       </article>
       <article class="chart-panel">
-        <div class="chart-heading"><div><h3>Edit size</h3><p>Byte-size change per edit</p></div><button class="download-chart" data-chart="sizes" type="button" aria-label="Download edit size chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Edit size</h3><p>Byte-size change per edit</p></div></div>
         <div class="chart-canvas chart-canvas-short"><canvas id="sizes-chart" aria-label="Edit size histogram"></canvas></div>
       </article>
     </section>

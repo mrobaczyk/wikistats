@@ -77,10 +77,14 @@ h2 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
 .chart-panel { min-width: 0; padding: 17px 18px 14px; border: 1px solid var(--line); background: rgba(255,255,255,.69); }
 .chart-wide { grid-column: 1 / -1; }
 .chart-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; min-height: 41px; }
+.chart-heading-period { align-items: center; }
+.monthly-chart-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.segmented-control { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--line); background: #f4f6f3; }
+.segmented-control button { min-height: 25px; padding: 0 9px; border: 0; background: transparent; color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
+.segmented-control button[aria-pressed="true"] { background: var(--green); color: white; }
+.segmented-control button:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
 .chart-heading h3 { margin: 0; font-size: 14px; font-weight: 800; }
 .chart-heading p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
-.download-chart { flex-shrink: 0; min-width: 62px; height: 29px; border: 1px solid var(--line); background: transparent; color: var(--green); font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; }
-.download-chart:hover { border-color: var(--green); background: var(--green-pale); }
 .chart-canvas { position: relative; height: 268px; margin-top: 10px; }
 .chart-canvas-short { height: 268px; }
 .chart-canvas-namespace { height: 330px; }
@@ -124,6 +128,8 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 28px
   .charts-grid { grid-template-columns: 1fr; gap: 11px; }
   .chart-wide { grid-column: auto; }
   .chart-panel { padding: 14px 12px 11px; }
+  .chart-heading-period { align-items: flex-start; flex-direction: column; }
+  .monthly-chart-tools { width: 100%; justify-content: space-between; }
   .chart-canvas, .chart-canvas-short { height: 245px; }
   .chart-canvas-namespace { height: 300px; }
   .chart-canvas-tall { height: 390px; }
