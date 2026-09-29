@@ -183,9 +183,11 @@
     const id = identity(username);
     const cached = await readCache(id);
     const existing = cached?.contributions || [];
-    const since = !fullHistory && existing.length ? newestTimestamp(existing) : null;
+    const missingSizeData = existing.some((record) => !Number.isFinite(record.sizediff));
+    const since = !fullHistory && existing.length && !missingSizeData ? newestTimestamp(existing) : null;
     const fresh = await fetchContributions(username, since, (page, count) => {
-      setStatus(`Showing saved data while ${role.toLowerCase()} updates…`, `${count.toLocaleString('en-US')} fetched · page ${page}`);
+      const fetchType = since ? 'recent edits' : missingSizeData ? 'full history to fill edit sizes' : 'history';
+      setStatus(`Showing saved data while ${role.toLowerCase()} updates…`, `${fetchType} · ${count.toLocaleString('en-US')} fetched · page ${page}`);
     });
     const combined = mergeContributions(fullHistory ? [] : existing, fresh, username);
     await writeCache(id, username, combined);
@@ -203,9 +205,12 @@
     elements.sync.disabled = true;
     elements.fullSync.disabled = true;
     setSyncPending(true);
-    setStatus(`Showing saved data while ${fullHistory ? 'full history downloads' : 'updates download'}…`, 'Connecting to wiki API…');
+    setStatus('Checking published data and saved cache…');
     const started = Date.now();
     try {
+      const archiveUpdated = await seedFromPublishedFiles();
+      if (archiveUpdated) await render();
+      setStatus(`Showing saved data while ${fullHistory ? 'full history downloads' : 'updates download'}…`, 'Connecting to wiki API…');
       const results = await Promise.all([
         syncUser(mainUser, fullHistory, 'Main account'),
         elements.botUser.value.trim() ? syncUser(elements.botUser.value.trim(), fullHistory, 'Bot') : Promise.resolve({ skipped: true })
@@ -245,17 +250,25 @@
   }
 
   async function seedFromPublishedFiles() {
+    if (elements.wiki.value.trim().toLowerCase() !== 'civilization') return false;
     const usernames = [...new Set([elements.mainUser.value.trim(), elements.botUser.value.trim()].filter(Boolean))];
     const candidates = usernames.map((username) => ({ username, file: publishedDataPath(username) }));
+    let updated = false;
     for (const candidate of candidates) {
-      if (!candidate.username || (await readCache(identity(candidate.username)))) continue;
+      const cached = await readCache(identity(candidate.username));
+      const existing = cached?.contributions || [];
+      if (existing.length && existing.every((record) => Number.isFinite(record.sizediff))) continue;
       try {
         const response = await fetch(candidate.file);
         if (!response.ok) continue;
         const data = await response.json();
-        if (Array.isArray(data) && data.length) await writeCache(identity(candidate.username), candidate.username, mergeContributions([], data, candidate.username));
+        if (Array.isArray(data) && data.length) {
+          await writeCache(identity(candidate.username), candidate.username, mergeContributions(existing, data, candidate.username));
+          updated = true;
+        }
       } catch { /* Published data files are optional. */ }
     }
+    return updated;
   }
 
   function createChart(canvasId, key, config) {
