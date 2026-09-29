@@ -64,8 +64,12 @@
     </section>
     <section class="charts-grid">
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits and a 30-day moving average</p></div><button class="download-chart" data-chart="timeline" type="button" aria-label="Download activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits by account and 30-day rolling averages</p></div><button class="download-chart" data-chart="timeline" type="button" aria-label="Download activity chart as PNG" title="Download PNG">↓ PNG</button></div>
         <div class="chart-canvas"><canvas id="timeline-chart" aria-label="Edits over time chart"></canvas></div>
+      </article>
+      <article class="chart-panel chart-wide">
+        <div class="chart-heading"><div><h3>Daily activity calendar</h3><p>Edits per day across your contribution history</p></div><button class="download-chart" data-chart="calendar" type="button" aria-label="Download calendar activity chart as PNG" title="Download PNG">↓ PNG</button></div>
+        <div class="calendar-wrap" id="calendar-wrap"><canvas id="calendar-chart" aria-label="Calendar heatmap of daily edits"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
         <div class="chart-heading"><div><h3>Monthly activity</h3><p>Compare the main account and bot</p></div><button class="download-chart" data-chart="monthly" type="button" aria-label="Download monthly activity chart as PNG" title="Download PNG">↓ PNG</button></div>
@@ -74,10 +78,6 @@
       <article class="chart-panel chart-wide">
         <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div><button class="download-chart" data-chart="heatmap" type="button" aria-label="Download weekday and hour chart as PNG" title="Download PNG">↓ PNG</button></div>
         <div class="heatmap-wrap"><canvas id="heatmap-chart" aria-label="Activity by weekday and hour heatmap"></canvas></div>
-      </article>
-      <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Daily activity calendar</h3><p>Edits per day across your contribution history</p></div><button class="download-chart" data-chart="calendar" type="button" aria-label="Download calendar activity chart as PNG" title="Download PNG">↓ PNG</button></div>
-        <div class="calendar-wrap" id="calendar-wrap"><canvas id="calendar-chart" aria-label="Calendar heatmap of daily edits"></canvas></div>
       </article>
       <article class="chart-panel namespace-chart-panel">
         <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits in each namespace</p></div><button class="download-chart" data-chart="namespaces" type="button" aria-label="Download namespace chart as PNG" title="Download PNG">↓ PNG</button></div>

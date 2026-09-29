@@ -364,26 +364,71 @@
     $('#last-updated').textContent = updatedAt ? `SAVED ${new Date(updatedAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}` : 'NO DATA';
   }
 
-  function renderTimeline(all) {
-    const daily = new Map();
-    for (const record of all) {
-      const date = new Date(record.timestamp);
-      if (!Number.isFinite(date.getTime())) continue;
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      daily.set(key, (daily.get(key) || 0) + 1);
+  function renderTimeline(main, bot) {
+    const countByDate = (records) => {
+      const counts = new Map();
+      for (const record of records) {
+        const date = new Date(record.timestamp);
+        if (!Number.isFinite(date.getTime())) continue;
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+      return counts;
+    };
+    const mainCounts = countByDate(main.contributions || []);
+    const botCounts = countByDate(bot.contributions || []);
+    const activeDates = [...new Set([...mainCounts.keys(), ...botCounts.keys()])].sort();
+    const dates = [];
+    const axisLabels = new Map();
+    if (activeDates.length) {
+      const [firstYear, firstMonth] = activeDates[0].slice(0, 7).split('-').map(Number);
+      const [lastYear, lastMonth, lastDay] = activeDates.at(-1).split('-').map(Number);
+      const monthSpan = (lastYear - firstYear) * 12 + lastMonth - firstMonth + 1;
+      const yearlyLabels = monthSpan > 36;
+      const quarterStart = Math.floor((firstMonth - 1) / 3) * 3 + 1;
+      const startDate = new Date(firstYear, yearlyLabels ? 0 : quarterStart - 1, 1);
+      const endDate = new Date(lastYear, lastMonth - 1, lastDay);
+      for (const date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        dates.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
+      }
+      dates.forEach((date, index) => {
+        const [year, month, day] = date.split('-');
+        if (yearlyLabels && month === '01' && day === '01') axisLabels.set(index, year);
+        if (!yearlyLabels && day === '01' && ['01', '04', '07', '10'].includes(month)) axisLabels.set(index, `${year}-${month}`);
+      });
     }
-    const dates = [...daily.keys()].sort();
-    const averages = dates.map((_, index) => {
-      const values = dates.slice(Math.max(0, index - 29), index + 1).map((date) => daily.get(date));
-      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    const valuesFor = (counts) => dates.map((date) => counts.get(date) || 0);
+    const rollingAverage = (values) => values.map((_, index) => {
+      const window = values.slice(Math.max(0, index - 29), index + 1);
+      return window.reduce((sum, value) => sum + value, 0) / window.length;
     });
+    const mainName = main.username || elements.mainUser.value.trim() || 'Main account';
+    const botName = bot.username || elements.botUser.value.trim() || 'Bot';
+    const mainDaily = valuesFor(mainCounts);
+    const botDaily = valuesFor(botCounts);
+    const datasets = [
+      { label: `${mainName} · daily`, data: mainDaily, borderColor: '#5c8fa3', pointRadius: 0, borderWidth: 1.1, tension: .16 },
+      { label: `${mainName} · 30-day average`, data: rollingAverage(mainDaily), borderColor: '#176d54', pointRadius: 0, borderWidth: 2, tension: .28 }
+    ];
+    if ((bot.contributions || []).length) {
+      datasets.push(
+        { label: `${botName} · daily`, data: botDaily, borderColor: '#dc654c', pointRadius: 0, borderWidth: 1.1, tension: .16 },
+        { label: `${botName} · 30-day average`, data: rollingAverage(botDaily), borderColor: '#e9b74e', pointRadius: 0, borderWidth: 2, borderDash: [5, 3], tension: .28 }
+      );
+    }
     createChart('timeline-chart', 'timeline', {
-      type: 'line', data: { labels: dates, datasets: [
-        { label: 'Daily edits', data: dates.map((date) => daily.get(date)), borderColor: '#5c8fa3', backgroundColor: '#5c8fa329', pointRadius: 0, borderWidth: 1.4, fill: true, tension: .16 },
-        { label: '30-active-day average', data: averages, borderColor: '#dc654c', pointRadius: 0, borderWidth: 2, tension: .28 }
-      ] }, options: {
+      type: 'line', data: { labels: dates, datasets }, options: {
         plugins: { legend: { position: window.matchMedia('(max-width: 760px)').matches ? 'bottom' : 'top' } },
-        scales: { x: { ticks: { maxTicksLimit: 10 } } }
+        scales: {
+          x: {
+            grid: { drawOnChartArea: false, drawTicks: false },
+            ticks: {
+              autoSkip: false,
+              maxRotation: 0,
+              callback(_value, index) { return axisLabels.get(index) || ''; }
+            }
+          }
+        }
       }
     });
   }
@@ -485,11 +530,32 @@
     const mainCounts = countByMonth(main.contributions || []);
     const botCounts = countByMonth(bot.contributions || []);
     const months = [...new Set([...mainCounts.keys(), ...botCounts.keys()])].sort();
+    const [firstYear, firstMonth] = (months[0] || '2000-01').split('-').map(Number);
+    const [lastYear, lastMonth] = (months.at(-1) || '2000-01').split('-').map(Number);
+    const monthSpan = (lastYear - firstYear) * 12 + lastMonth - firstMonth + 1;
+    const yearlyLabels = monthSpan > 36;
     createChart('monthly-chart', 'monthly', {
       type: 'bar', data: { labels: months, datasets: [
         { label: main.username || elements.mainUser.value, data: months.map((month) => mainCounts.get(month) || 0), backgroundColor: '#176d54', stack: 'edits' },
         { label: bot.username || elements.botUser.value || 'Bot', data: months.map((month) => botCounts.get(month) || 0), backgroundColor: '#dc654c', stack: 'edits' }
-      ] }, options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { precision: 0 } } } }
+      ] }, options: {
+        scales: {
+          x: {
+            stacked: true,
+            ticks: {
+              autoSkip: false,
+              maxRotation: 0,
+              callback(value, index) {
+                const month = this.getLabelForValue(value);
+                const [year, monthNumber] = month.split('-');
+                if (yearlyLabels) return index === 0 || monthNumber === '01' ? year : '';
+                return index === 0 || ['01', '04', '07', '10'].includes(monthNumber) ? month : '';
+              }
+            }
+          },
+          y: { stacked: true, ticks: { precision: 0 } }
+        }
+      }
     });
   }
 
@@ -532,11 +598,12 @@
       matrix[weekday][date.getHours()] += 1;
     });
     const max = Math.max(1, ...matrix.flat());
-    context.font = '10px Manrope, sans-serif';
+    context.font = '500 11px Manrope, sans-serif';
     context.textBaseline = 'middle';
-    context.fillStyle = '#7e8983';
+    context.fillStyle = '#4f5d56';
     DAY_LABELS.forEach((day, row) => {
       context.textAlign = 'right';
+      context.fillStyle = '#4f5d56';
       context.fillText(day, left - 8, top + row * cellHeight + cellHeight / 2);
       for (let hour = 0; hour < 24; hour += 1) {
         const intensity = matrix[row][hour] / max;
@@ -549,7 +616,7 @@
         context.fill();
       }
     });
-    context.fillStyle = '#7e8983';
+    context.fillStyle = '#4f5d56';
     context.textAlign = 'center';
     for (let hour = 0; hour < 24; hour += 3) context.fillText(String(hour).padStart(2, '0'), left + hour * cellWidth + cellWidth / 2, height - 11);
 
@@ -665,7 +732,7 @@
       setStatus('Could not load the chart library.', 'Check access to cdn.jsdelivr.net.');
       return;
     }
-    renderTimeline(all);
+    renderTimeline(main, bot || { contributions: [] });
     renderNamespaces(all);
     renderPages(all);
     renderSizes(all);
@@ -725,7 +792,14 @@
 
   async function initialize() {
     loadSettings();
-    [elements.wiki, elements.mainUser, elements.botUser].forEach((input) => input.addEventListener('change', saveSettings));
+    [elements.wiki, elements.mainUser, elements.botUser].forEach((input) => {
+      input.addEventListener('change', saveSettings);
+      input.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        void syncAll(false);
+      });
+    });
     elements.sync.addEventListener('click', () => syncAll(false));
     elements.fullSync.addEventListener('click', () => syncAll(true));
     $('#export-main-json').addEventListener('click', () => exportJson(elements.mainUser.value.trim()));
