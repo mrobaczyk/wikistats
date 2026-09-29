@@ -239,11 +239,14 @@
     saveSettings();
   }
 
+  function publishedDataPath(username) {
+    const fileSlug = username.trim().replace(/[^a-z0-9_-]/gi, '_');
+    return `data/fandom_edits_${fileSlug}.json`;
+  }
+
   async function seedFromPublishedFiles() {
-    const candidates = [
-      { username: 'Robal91', file: 'fandom_edits_Robal91.json' },
-      { username: 'RobalBot', file: 'fandom_edits_RobalBot.json' }
-    ];
+    const usernames = [...new Set([elements.mainUser.value.trim(), elements.botUser.value.trim()].filter(Boolean))];
+    const candidates = usernames.map((username) => ({ username, file: publishedDataPath(username) }));
     for (const candidate of candidates) {
       if (!candidate.username || (await readCache(identity(candidate.username)))) continue;
       try {

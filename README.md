@@ -16,7 +16,7 @@ For local testing, serve the folder over HTTP. Do not open `index.html` as `file
 - Later syncs request contributions newer than the newest cached timestamp and merge them without duplicates.
 - **Full history** fetches the complete available history again. Use it to fill older imported records with `sizediff` and `comment` fields.
 - Browser cache is separated by wiki subdomain and account name. It does not transfer automatically to another browser or device.
-- Import and export JSON to move data manually. Exported files are named with their account, for example `fandom_edits_Robal91.json` and `fandom_edits_RobalBot.json`; the app loads these two published files as initial data for their matching accounts only.
+- Import and export JSON to move data manually. Store published contribution files in `data/` using the account-specific name, for example `data/fandom_edits_Robal91.json` or `data/fandom_edits_Wiman_Chec.json`. On startup, the app looks for matching files in `data/` for the currently selected main and bot accounts.
 
 GitHub Pages only serves static files, so the app cannot write changes directly back to the repository. Sync stores data in browser IndexedDB; exporting JSON is an explicit download.
 
