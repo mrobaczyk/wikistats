@@ -12,8 +12,8 @@ For local testing, serve the folder over HTTP. Do not open `index.html` as `file
 
 ## Data and sync
 
-- The first sync fetches the account's full contribution history, following API continuation pages.
-- Later syncs request contributions newer than the newest cached timestamp and merge them without duplicates.
+- The first **Sync latest** fetches the account's full contribution history, following API continuation pages.
+- Later **Sync latest** runs request contributions from the newest cached timestamp and merge them without duplicates, even if older cached records are missing `sizediff` or `comment`.
 - **Full history** fetches the complete available history again. Use it to fill older imported records with `sizediff` and `comment` fields.
 - Browser cache is separated by wiki subdomain and account name. It does not transfer automatically to another browser or device.
 - Import and export JSON to move data manually. Store published contribution files in `data/` using the account-specific name, for example `data/fandom_edits_Robal91.json` or `data/fandom_edits_Wiman_Chec.json`. On startup, the app looks for matching files in `data/` for the currently selected main and bot accounts.

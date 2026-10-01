@@ -186,10 +186,9 @@
     const id = identity(username);
     const cached = await readCache(id);
     const existing = cached?.contributions || [];
-    const missingSizeData = existing.some((record) => !Number.isFinite(record.sizediff));
-    const since = !fullHistory && existing.length && !missingSizeData ? newestTimestamp(existing) : null;
+    const since = !fullHistory && existing.length ? newestTimestamp(existing) : null;
     const fresh = await fetchContributions(username, since, (page, count) => {
-      const fetchType = since ? 'recent edits' : missingSizeData ? 'full history to fill edit sizes' : 'history';
+      const fetchType = since ? 'recent edits' : 'history';
       setStatus(`Showing saved data while ${role.toLowerCase()} updates…`, `${fetchType} · ${count.toLocaleString('en-US')} fetched · page ${page}`);
     });
     const combined = mergeContributions(fullHistory ? [] : existing, fresh, username);
