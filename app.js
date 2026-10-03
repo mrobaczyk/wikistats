@@ -822,6 +822,7 @@
     });
 
     const cells = [];
+    const monthLabels = new Map();
     let previousMonth = -1;
     const maximum = Math.max(1, ...daily.values());
     for (let dayIndex = 0; dayIndex < dayCount; dayIndex += 1) {
@@ -839,12 +840,15 @@
       context.fill();
       cells.push({ x, y, date, count });
       if (date.getMonth() !== previousMonth && row <= 3) {
-        context.fillStyle = '#7e8983';
-        context.textAlign = 'left';
-        context.fillText(date.toLocaleString('en-US', { month: 'short' }), x, 9);
+        const [lastColumn] = [...monthLabels.keys()].slice(-1);
+        if (lastColumn !== undefined && column - lastColumn < 3) monthLabels.delete(lastColumn);
+        monthLabels.set(column, { x, text: date.toLocaleString('en-US', { month: 'short' }) });
         previousMonth = date.getMonth();
       }
     }
+    context.fillStyle = '#7e8983';
+    context.textAlign = 'left';
+    monthLabels.forEach(({ x, text }) => context.fillText(text, x, 9));
 
     canvas.onpointermove = (event) => {
       const bounds = canvas.getBoundingClientRect();
