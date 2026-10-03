@@ -722,12 +722,12 @@
     const dayCount = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())) / 86400000) + 1;
     const weekCount = Math.ceil(dayCount / 7);
     const width = left + weekCount * step + 8;
-    const height = top + 7 * step + 5;
+    const height = top + 7 * step + 8;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     canvas.width = Math.ceil(width * ratio);
     canvas.height = Math.ceil(height * ratio);
-    wrapper.style.height = `${height}px`;
+    wrapper.style.height = `${height + 18}px`;
     const context = canvas.getContext('2d');
     context.scale(ratio, ratio);
     context.font = '10px Manrope, sans-serif';
