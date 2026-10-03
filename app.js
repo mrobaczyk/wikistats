@@ -624,6 +624,69 @@
     else renderPeriodActivity(main, bot);
   }
 
+  function renderPeaks(main, bot) {
+    const pad = (value) => String(value).padStart(2, '0');
+    const periods = [
+      { name: 'Day', key: (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`, label: (date) => date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) },
+      { name: 'Week', key: (date) => {
+        const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - ((date.getDay() + 6) % 7));
+        return `${monday.getFullYear()}-${pad(monday.getMonth() + 1)}-${pad(monday.getDate())}`;
+      }, label: (date) => `Week of ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` },
+      { name: 'Month', key: (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}`, label: (date) => date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) },
+      { name: 'Year', key: (date) => String(date.getFullYear()), label: (date) => String(date.getFullYear()) }
+    ];
+    const peakFor = (records, period) => {
+      const counts = new Map();
+      records.forEach((record) => {
+        const date = new Date(record.timestamp);
+        if (!Number.isFinite(date.getTime())) return;
+        const key = period.key(date);
+        const entry = counts.get(key) || { count: 0, date };
+        entry.count += 1;
+        counts.set(key, entry);
+      });
+      let best = null;
+      counts.forEach((entry) => { if (!best || entry.count > best.count) best = entry; });
+      return best;
+    };
+    const accounts = [{ name: main.username || elements.mainUser.value.trim() || 'Main account', records: main.contributions || [] }];
+    if ((bot.contributions || []).length) accounts.push({ name: bot.username || elements.botUser.value.trim() || 'Bot', records: bot.contributions });
+
+    const table = $('#peaks-table');
+    const head = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    ['Peak', ...accounts.map((account) => account.name)].forEach((text) => {
+      const cell = document.createElement('th');
+      cell.textContent = text;
+      headRow.append(cell);
+    });
+    head.append(headRow);
+    const body = document.createElement('tbody');
+    periods.forEach((period) => {
+      const row = document.createElement('tr');
+      const title = document.createElement('th');
+      title.scope = 'row';
+      title.textContent = period.name;
+      row.append(title);
+      accounts.forEach((account) => {
+        const cell = document.createElement('td');
+        const peak = peakFor(account.records, period);
+        if (peak) {
+          const count = document.createElement('strong');
+          const when = document.createElement('span');
+          count.textContent = peak.count.toLocaleString('en-US');
+          when.textContent = period.label(peak.date);
+          cell.append(count, when);
+        } else {
+          cell.textContent = '—';
+        }
+        row.append(cell);
+      });
+      body.append(row);
+    });
+    table.replaceChildren(head, body);
+  }
+
   function showCanvasTooltip(event, title, count) {
     const tooltip = $('#chart-tooltip');
     const heading = document.createElement('strong');
@@ -800,6 +863,7 @@
       return;
     }
     renderActivity(main, bot || { contributions: [] });
+    renderPeaks(main, bot || { contributions: [] });
     renderNamespaces(all);
     renderPages(all);
     renderSizes(all);

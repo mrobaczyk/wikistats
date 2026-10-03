@@ -94,6 +94,13 @@ h2 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
 .heatmap-wrap canvas, .calendar-wrap canvas { cursor: crosshair; }
 .calendar-wrap { height: 144px; margin-top: 12px; overflow: auto hidden; overscroll-behavior-inline: contain; }
 .calendar-wrap canvas { display: block; }
+.peaks-table { width: 100%; margin-top: 8px; border-collapse: collapse; font-size: 12px; }
+.peaks-table th, .peaks-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: baseline; }
+.peaks-table tr:last-child th, .peaks-table tr:last-child td { border-bottom: 0; }
+.peaks-table thead th { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; }
+.peaks-table tbody th { width: 90px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.peaks-table td strong { font-size: 18px; font-weight: 700; }
+.peaks-table td span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
 .chart-tooltip { position: fixed; z-index: 20; display: grid; gap: 3px; max-width: min(240px, calc(100vw - 16px)); padding: 8px 10px; background: #1d2825; color: white; box-shadow: 0 3px 12px #1d282533; pointer-events: none; font-size: 10px; line-height: 1.4; }
 .chart-tooltip[hidden] { display: none; }
 .chart-tooltip strong { font-size: 10px; font-weight: 700; }
