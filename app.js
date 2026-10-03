@@ -357,6 +357,14 @@
     $('#stat-edits').textContent = all.length.toLocaleString('en-US');
     $('#stat-edits-note').textContent = `${(main.contributions || []).length.toLocaleString('en-US')} main · ${(bot.contributions || []).length.toLocaleString('en-US')} bot`;
     $('#stat-pages').textContent = pages.size.toLocaleString('en-US');
+    const countCreated = (records) => records.filter((record) => Number(record.parentid) === 0 && record.parentid !== undefined && record.parentid !== null).length;
+    const mainCreated = countCreated(main.contributions || []);
+    const botCreated = countCreated(bot.contributions || []);
+    const totalCreated = mainCreated + botCreated;
+    $('#stat-created').textContent = totalCreated.toLocaleString('en-US');
+    $('#stat-created-note').textContent = (bot.contributions || []).length
+      ? `${mainCreated.toLocaleString('en-US')} main · ${botCreated.toLocaleString('en-US')} bot`
+      : `${all.length ? (totalCreated / all.length * 100).toFixed(1) : '0.0'}% of all edits`;
     $('#stat-bytes').textContent = formatBytes(netBytes);
     $('#stat-bytes').title = `${sizedRecords.length.toLocaleString('en-US')} edits with size data`;
     $('#stat-period').textContent = start && end ? `${start.getFullYear()}–${end.getFullYear()}` : '—';
