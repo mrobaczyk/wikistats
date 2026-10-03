@@ -78,7 +78,7 @@ h2 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
 .chart-wide { grid-column: 1 / -1; }
 .chart-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; min-height: 41px; }
 .chart-heading-period { align-items: center; }
-.monthly-chart-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.activity-chart-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .segmented-control { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--line); background: #f4f6f3; }
 .segmented-control button { min-height: 25px; padding: 0 9px; border: 0; background: transparent; color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
 .segmented-control button[aria-pressed="true"] { background: var(--green); color: white; }
@@ -129,7 +129,7 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 28px
   .chart-wide { grid-column: auto; }
   .chart-panel { padding: 14px 12px 11px; }
   .chart-heading-period { align-items: flex-start; flex-direction: column; }
-  .monthly-chart-tools { width: 100%; justify-content: space-between; }
+  .activity-chart-tools { width: 100%; justify-content: space-between; }
   .chart-canvas, .chart-canvas-short { height: 245px; }
   .chart-canvas-namespace { height: 300px; }
   .chart-canvas-tall { height: 390px; }

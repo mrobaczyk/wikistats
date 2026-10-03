@@ -21,7 +21,7 @@
   let currentContributions = [];
   let currentMainAccount = null;
   let currentBotAccount = null;
-  let monthlyGranularity = 'monthly';
+  let activityGranularity = 'daily';
 
   const $ = (selector) => document.querySelector(selector);
   const elements = {
@@ -366,7 +366,7 @@
     $('#last-updated').textContent = updatedAt ? `SAVED ${new Date(updatedAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}` : 'NO DATA';
   }
 
-  function renderTimeline(main, bot) {
+  function renderDailyActivity(main, bot) {
     const countByDate = (records) => {
       const counts = new Map();
       for (const record of records) {
@@ -418,7 +418,8 @@
         { label: `${botName} · 30-day average`, data: rollingAverage(botDaily), borderColor: '#e9b74e', pointRadius: 0, borderWidth: 2, borderDash: [5, 3], tension: .28 }
       );
     }
-    createChart('timeline-chart', 'timeline', {
+    $('#activity-chart').setAttribute('aria-label', 'Daily edits and 30-day rolling averages chart');
+    createChart('activity-chart', 'activity', {
       type: 'line', data: { labels: dates, datasets }, options: {
         plugins: { legend: { position: window.matchMedia('(max-width: 760px)').matches ? 'bottom' : 'top' } },
         scales: {
@@ -517,10 +518,10 @@
     });
   }
 
-  function renderMonthly(main, bot) {
+  function renderPeriodActivity(main, bot) {
     const periodForDate = (date) => {
-      if (monthlyGranularity === 'yearly') return String(date.getFullYear());
-      if (monthlyGranularity === 'monthly') return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (activityGranularity === 'yearly') return String(date.getFullYear());
+      if (activityGranularity === 'monthly') return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const weekStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
       return `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
@@ -542,21 +543,21 @@
     const periods = [];
     const firstPeriod = observedPeriods[0];
     const lastPeriod = observedPeriods.at(-1);
-    const firstMonthKey = monthlyGranularity === 'yearly' ? `${firstPeriod || '2000'}-01` : (firstPeriod || '2000-01').slice(0, 7);
-    const lastMonthKey = monthlyGranularity === 'yearly' ? `${lastPeriod || '2000'}-01` : (lastPeriod || '2000-01').slice(0, 7);
+    const firstMonthKey = activityGranularity === 'yearly' ? `${firstPeriod || '2000'}-01` : (firstPeriod || '2000-01').slice(0, 7);
+    const lastMonthKey = activityGranularity === 'yearly' ? `${lastPeriod || '2000'}-01` : (lastPeriod || '2000-01').slice(0, 7);
     const [firstYear, firstMonth] = firstMonthKey.split('-').map(Number);
     const [lastYear, lastMonth] = lastMonthKey.split('-').map(Number);
     const monthSpan = (lastYear - firstYear) * 12 + lastMonth - firstMonth + 1;
-    const yearlyLabels = monthlyGranularity === 'monthly' && monthSpan > 36;
+    const yearlyLabels = activityGranularity === 'monthly' && monthSpan > 36;
 
-    if (observedPeriods.length && monthlyGranularity === 'weekly') {
+    if (observedPeriods.length && activityGranularity === 'weekly') {
       const date = new Date(`${firstPeriod}T00:00:00`);
       const endDate = new Date(`${lastPeriod}T00:00:00`);
       while (date <= endDate) {
         periods.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
         date.setDate(date.getDate() + 7);
       }
-    } else if (observedPeriods.length && monthlyGranularity === 'monthly') {
+    } else if (observedPeriods.length && activityGranularity === 'monthly') {
       const quarterStart = Math.floor((firstMonth - 1) / 3) * 3;
       const startMonthIndex = firstYear * 12 + (yearlyLabels ? 0 : quarterStart);
       const endMonthIndex = lastYear * 12 + lastMonth - 1;
@@ -571,9 +572,10 @@
 
     const mainName = main.username || elements.mainUser.value;
     const botName = bot.username || elements.botUser.value || 'Bot';
-    const periodLabel = monthlyGranularity === 'weekly' ? 'Weekly edits' : monthlyGranularity === 'yearly' ? 'Yearly edits' : 'Monthly edits';
+    const periodLabel = activityGranularity === 'weekly' ? 'Weekly edits' : activityGranularity === 'yearly' ? 'Yearly edits' : 'Monthly edits';
+    $('#activity-chart').setAttribute('aria-label', `${periodLabel} by account chart`);
     let xTicks;
-    if (monthlyGranularity === 'monthly') {
+    if (activityGranularity === 'monthly') {
       xTicks = {
         autoSkip: false,
         maxRotation: 0,
@@ -584,7 +586,7 @@
           return index === 0 || ['01', '04', '07', '10'].includes(monthNumber) ? month : '';
         }
       };
-    } else if (monthlyGranularity === 'yearly') {
+    } else if (activityGranularity === 'yearly') {
       xTicks = { autoSkip: false, maxRotation: 0 };
     } else {
       xTicks = {
@@ -601,7 +603,7 @@
       };
     }
 
-    createChart('monthly-chart', 'monthly', {
+    createChart('activity-chart', 'activity', {
       type: 'bar', data: { labels: periods, datasets: [
         { label: `${mainName} · ${periodLabel.toLowerCase()}`, data: periods.map((period) => mainCounts.get(period) || 0), backgroundColor: '#176d54', stack: 'edits' },
         { label: `${botName} · ${periodLabel.toLowerCase()}`, data: periods.map((period) => botCounts.get(period) || 0), backgroundColor: '#dc654c', stack: 'edits' }
@@ -615,6 +617,11 @@
         }
       }
     });
+  }
+
+  function renderActivity(main, bot) {
+    if (activityGranularity === 'daily') renderDailyActivity(main, bot);
+    else renderPeriodActivity(main, bot);
   }
 
   function showCanvasTooltip(event, title, count) {
@@ -792,11 +799,10 @@
       setStatus('Could not load the chart library.', 'Check access to cdn.jsdelivr.net.');
       return;
     }
-    renderTimeline(main, bot || { contributions: [] });
+    renderActivity(main, bot || { contributions: [] });
     renderNamespaces(all);
     renderPages(all);
     renderSizes(all);
-    renderMonthly(main, bot || { contributions: [] });
     renderHeatmap(all);
     renderCalendarHeatmap(all);
   }
@@ -847,12 +853,12 @@
     elements.fullSync.addEventListener('click', () => syncAll(true));
     $('#export-main-json').addEventListener('click', () => exportJson(elements.mainUser.value.trim()));
     $('#export-bot-json').addEventListener('click', () => exportJson(elements.botUser.value.trim()));
-    document.querySelectorAll('[data-monthly-period]').forEach((button) => button.addEventListener('click', () => {
-      monthlyGranularity = button.dataset.monthlyPeriod;
-      document.querySelectorAll('[data-monthly-period]').forEach((option) => {
+    document.querySelectorAll('[data-activity-period]').forEach((button) => button.addEventListener('click', () => {
+      activityGranularity = button.dataset.activityPeriod;
+      document.querySelectorAll('[data-activity-period]').forEach((option) => {
         option.setAttribute('aria-pressed', String(option === button));
       });
-      if (currentMainAccount) renderMonthly(currentMainAccount, currentBotAccount || { contributions: [] });
+      if (currentMainAccount) renderActivity(currentMainAccount, currentBotAccount || { contributions: [] });
     }));
     $('#main-file-input').addEventListener('change', (event) => importJson(event.target.files[0], elements.mainUser.value.trim()));
     $('#bot-file-input').addEventListener('change', (event) => importJson(event.target.files[0], elements.botUser.value.trim()));

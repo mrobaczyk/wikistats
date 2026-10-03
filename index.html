@@ -64,25 +64,22 @@
     </section>
     <section class="charts-grid">
       <article class="chart-panel chart-wide">
-        <div class="chart-heading"><div><h3>Edits over time</h3><p>Daily edits by account and 30-day rolling averages</p></div></div>
-        <div class="chart-canvas"><canvas id="timeline-chart" aria-label="Edits over time chart"></canvas></div>
+        <div class="chart-heading chart-heading-period">
+          <div><h3>Activity over time</h3><p>Compare edits by day, week, month, or year</p></div>
+          <div class="activity-chart-tools">
+            <div class="segmented-control" role="group" aria-label="Activity aggregation period">
+              <button type="button" data-activity-period="daily" aria-pressed="true">Daily</button>
+              <button type="button" data-activity-period="weekly" aria-pressed="false">Weekly</button>
+              <button type="button" data-activity-period="monthly" aria-pressed="false">Monthly</button>
+              <button type="button" data-activity-period="yearly" aria-pressed="false">Yearly</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-canvas"><canvas id="activity-chart" aria-label="Daily edits and rolling averages chart"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
         <div class="chart-heading"><div><h3>Daily activity calendar</h3><p>Edits per day across your contribution history</p></div></div>
         <div class="calendar-wrap" id="calendar-wrap"><canvas id="calendar-chart" aria-label="Calendar heatmap of daily edits"></canvas></div>
-      </article>
-      <article class="chart-panel chart-wide">
-        <div class="chart-heading chart-heading-period">
-          <div><h3>Activity by period</h3><p>Compare the main account and bot</p></div>
-          <div class="monthly-chart-tools">
-            <div class="segmented-control" role="group" aria-label="Activity aggregation period">
-              <button type="button" data-monthly-period="weekly" aria-pressed="false">Weekly</button>
-              <button type="button" data-monthly-period="monthly" aria-pressed="true">Monthly</button>
-              <button type="button" data-monthly-period="yearly" aria-pressed="false">Yearly</button>
-            </div>
-          </div>
-        </div>
-        <div class="chart-canvas"><canvas id="monthly-chart" aria-label="Monthly edits chart"></canvas></div>
       </article>
       <article class="chart-panel chart-wide">
         <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div></div>
