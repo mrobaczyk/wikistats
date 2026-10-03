@@ -598,15 +598,19 @@
       xTicks = { autoSkip: false, maxRotation: 0 };
     } else {
       xTicks = {
-        autoSkip: true,
-        maxTicksLimit: 12,
+        autoSkip: false,
         maxRotation: 0,
         callback(value) {
-          const week = this.getLabelForValue(value);
-          const date = new Date(`${week}T00:00:00`);
-          return date.toLocaleDateString('en-US', monthSpan > 36
-            ? { month: 'short', year: '2-digit' }
-            : { month: 'short', day: 'numeric' });
+          const weekStart = new Date(`${this.getLabelForValue(value)}T00:00:00`);
+          for (let offset = 0; offset < 7; offset += 1) {
+            const day = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + offset);
+            if (day.getDate() !== 1) continue;
+            const year = String(day.getFullYear());
+            const month = String(day.getMonth() + 1).padStart(2, '0');
+            if (monthSpan > 36) return month === '01' ? year : '';
+            if (['01', '04', '07', '10'].includes(month)) return `${year}-${month}`;
+          }
+          return '';
         }
       };
     }
@@ -619,6 +623,7 @@
         scales: {
           x: {
             stacked: true,
+            ...(activityGranularity === 'weekly' ? { grid: { drawOnChartArea: false, drawTicks: false } } : {}),
             ticks: xTicks
           },
           y: { stacked: true, ticks: { precision: 0 } }
