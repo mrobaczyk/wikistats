@@ -374,6 +374,25 @@
     $('#last-updated').textContent = updatedAt ? `SAVED ${new Date(updatedAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}` : 'NO DATA';
   }
 
+  function yearBoundaryGrid(labels, granularity) {
+    const boundaries = new Set();
+    labels.forEach((label, index) => {
+      if (granularity === 'daily' && label.slice(5) === '01-01') boundaries.add(index);
+      if (granularity === 'monthly' && label.slice(5) === '01') boundaries.add(index);
+      if (granularity === 'yearly' && index > 0) boundaries.add(index);
+      if (granularity === 'weekly') {
+        const start = new Date(`${label}T00:00:00`);
+        const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+        if (start.getFullYear() !== end.getFullYear() || (start.getMonth() === 0 && start.getDate() === 1)) boundaries.add(index);
+      }
+    });
+    return {
+      drawOnChartArea: true,
+      drawTicks: false,
+      color: (context) => boundaries.has(context.index) ? '#dce3dd' : 'transparent'
+    };
+  }
+
   function renderDailyActivity(main, bot) {
     const countByDate = (records) => {
       const counts = new Map();
@@ -432,7 +451,7 @@
         plugins: { legend: { position: window.matchMedia('(max-width: 760px)').matches ? 'bottom' : 'top' } },
         scales: {
           x: {
-            grid: { drawOnChartArea: false, drawTicks: false },
+            grid: yearBoundaryGrid(dates, 'daily'),
             ticks: {
               autoSkip: false,
               maxRotation: 0,
@@ -629,7 +648,7 @@
         scales: {
           x: {
             stacked: true,
-            ...(activityGranularity === 'weekly' ? { grid: { drawOnChartArea: false, drawTicks: false } } : {}),
+            grid: yearBoundaryGrid(periods, activityGranularity),
             ticks: xTicks
           },
           y: { stacked: true, ticks: { precision: 0 } }
