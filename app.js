@@ -466,58 +466,45 @@
   function renderNamespaces(all) {
     const counts = new Map();
     all.forEach((record) => counts.set(record.ns, (counts.get(record.ns) || 0) + 1));
-    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-    createChart('namespaces-chart', 'namespaces', {
-      type: 'doughnut', data: { labels: entries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`), datasets: [{ label: 'Edits', unit: 'edits', data: entries.map(([, count]) => count), backgroundColor: entries.map((_, index) => PALETTE[index % PALETTE.length]), borderColor: '#fff', borderWidth: 2 }] },
-      options: {
-        radius: '98%',
-        cutout: '48%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 8,
-              padding: 10,
-              generateLabels(chart) {
-                const defaultLabels = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
-                const columnCount = window.matchMedia('(max-width: 760px)').matches ? 2 : 3;
-                const rowCount = Math.ceil(defaultLabels.length / columnCount);
-                return defaultLabels.map((label, index) => ({
-                  ...label,
-                  _gridRow: index % rowCount,
-                  _gridColumn: Math.floor(index / rowCount)
-                }));
-              }
-            }
-          }
-        }
-      }
-    });
-
     const pagesByNamespace = new Map();
     all.forEach((record) => {
       if (!record.title) return;
       if (!pagesByNamespace.has(record.ns)) pagesByNamespace.set(record.ns, new Set());
       pagesByNamespace.get(record.ns).add(record.title);
     });
-    const pageEntries = [...pagesByNamespace.entries()].sort((left, right) => right[1].size - left[1].size);
-    createChart('unique-pages-namespace-chart', 'unique-pages-namespace', {
+    const namespaceIds = [...new Set([...counts.keys(), ...pagesByNamespace.keys()])].sort((a, b) => a - b);
+    const labels = namespaceIds.map((ns) => NAMESPACE_NAMES[ns] || `NS ${ns}`);
+    const colors = namespaceIds.map((_, index) => PALETTE[index % PALETTE.length]);
+    const createNamespaceChart = (canvasId, key, label, unit, values) => createChart(canvasId, key, {
       type: 'doughnut',
       data: {
-        labels: pageEntries.map(([ns]) => NAMESPACE_NAMES[ns] || `NS ${ns}`),
+        labels,
         datasets: [{
-          label: 'Unique pages', unit: 'unique pages',
-          data: pageEntries.map(([, titles]) => titles.size),
-          backgroundColor: pageEntries.map((_, index) => PALETTE[index % PALETTE.length]),
+          label, unit, data: values, backgroundColor: colors,
           borderColor: '#fff', borderWidth: 2
         }]
       },
       options: {
         radius: '98%',
         cutout: '48%',
-        plugins: { legend: { position: 'bottom', align: 'center', labels: { boxWidth: 8, padding: 10 } } }
+        plugins: { legend: { display: false } }
       }
     });
+    createNamespaceChart('namespaces-chart', 'namespaces', 'Edits', 'edits', namespaceIds.map((ns) => counts.get(ns) || 0));
+    createNamespaceChart('unique-pages-namespace-chart', 'unique-pages-namespace', 'Unique pages', 'unique pages', namespaceIds.map((ns) => pagesByNamespace.get(ns)?.size || 0));
+
+    const legend = $('#namespace-legend');
+    legend.replaceChildren(...namespaceIds.map((ns, index) => {
+      const item = document.createElement('li');
+      const swatch = document.createElement('span');
+      const label = document.createElement('span');
+      swatch.className = 'namespace-legend-swatch';
+      swatch.style.backgroundColor = colors[index];
+      swatch.setAttribute('aria-hidden', 'true');
+      label.textContent = labels[index];
+      item.append(swatch, label);
+      return item;
+    }));
   }
 
   function renderPages(all) {

@@ -89,6 +89,15 @@ h2 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
 .chart-canvas-short { height: 268px; }
 .chart-canvas-namespace { height: 330px; }
 .chart-canvas-tall { height: 450px; }
+.namespace-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.namespace-chart { min-width: 0; }
+.namespace-chart h4 { margin: 8px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+.namespace-chart .chart-canvas-namespace { width: 100%; max-width: 360px; height: 260px; margin: 4px auto 0; }
+.namespace-chart .chart-canvas-namespace canvas { display: block; max-width: 100%; }
+.namespace-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px 16px; margin: 10px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); list-style: none; }
+.namespace-legend li { display: flex; align-items: flex-start; gap: 7px; min-width: 0; color: var(--muted); font-size: 11px; }
+.namespace-legend li > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.namespace-legend-swatch { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; }
 .heatmap-wrap { height: 270px; margin-top: 12px; }
 .heatmap-wrap canvas { display: block; width: 100%; height: 100%; }
 .heatmap-wrap canvas, .calendar-wrap canvas { cursor: crosshair; }
@@ -139,7 +148,8 @@ footer { display: flex; justify-content: space-between; gap: 18px; padding: 28px
   .chart-heading-period { align-items: flex-start; flex-direction: column; }
   .activity-chart-tools { width: 100%; justify-content: space-between; }
   .chart-canvas, .chart-canvas-short { height: 245px; }
-  .chart-canvas-namespace { height: 300px; }
+  .namespace-charts { grid-template-columns: 1fr; gap: 12px; }
+  .namespace-chart .chart-canvas-namespace { height: 230px; }
   .chart-canvas-tall { height: 390px; }
   .heatmap-wrap { height: 245px; }
   footer { flex-direction: column; line-height: 1.7; }

@@ -90,13 +90,13 @@
         <div class="chart-heading"><div><h3>When do you edit?</h3><p>Activity by weekday and hour · local time</p></div></div>
         <div class="heatmap-wrap"><canvas id="heatmap-chart" aria-label="Activity by weekday and hour heatmap"></canvas></div>
       </article>
-      <article class="chart-panel namespace-chart-panel">
-        <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits in each namespace</p></div></div>
-        <div class="chart-canvas chart-canvas-namespace"><canvas id="namespaces-chart" aria-label="Edits by namespace chart"></canvas></div>
-      </article>
-      <article class="chart-panel namespace-chart-panel">
-        <div class="chart-heading"><div><h3>Unique pages edited</h3><p>Distinct pages edited in each namespace</p></div></div>
-        <div class="chart-canvas chart-canvas-namespace"><canvas id="unique-pages-namespace-chart" aria-label="Unique pages edited by namespace chart"></canvas></div>
+      <article class="chart-panel chart-wide namespace-chart-panel">
+        <div class="chart-heading"><div><h3>Namespaces</h3><p>Edits and distinct pages by namespace</p></div></div>
+        <div class="namespace-charts">
+          <div class="namespace-chart"><h4>Edits</h4><div class="chart-canvas chart-canvas-namespace"><canvas id="namespaces-chart" aria-label="Edits by namespace chart"></canvas></div></div>
+          <div class="namespace-chart"><h4>Unique pages edited</h4><div class="chart-canvas chart-canvas-namespace"><canvas id="unique-pages-namespace-chart" aria-label="Unique pages edited by namespace chart"></canvas></div></div>
+        </div>
+        <ul class="namespace-legend" id="namespace-legend" aria-label="Namespace legend"></ul>
       </article>
       <article class="chart-panel">
         <div class="chart-heading"><div><h3>Most edited pages</h3><p>20 pages with the most edits</p></div></div>
