@@ -867,7 +867,9 @@
       if (date.getMonth() !== previousMonth && row <= 3) {
         const [lastColumn] = [...monthLabels.keys()].slice(-1);
         if (lastColumn !== undefined && column - lastColumn < 3) monthLabels.delete(lastColumn);
-        monthLabels.set(column, { x, text: date.toLocaleString('en-US', { month: 'short' }) });
+        const month = date.toLocaleString('en-US', { month: 'short' });
+        const label = date.getMonth() === 0 ? `${month} ${date.getFullYear()}` : month;
+        monthLabels.set(column, { x, text: label });
         previousMonth = date.getMonth();
       }
     }
