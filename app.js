@@ -10,7 +10,7 @@
     '4': 'Civilization Wiki', '5': 'Civilization Wiki talk', '6': 'File', '7': 'File talk', '8': 'MediaWiki',
     '9': 'MediaWiki talk', '10': 'Template', '11': 'Template talk', '12': 'Help', '13': 'Help talk',
     '14': 'Category', '15': 'Category talk', 
-    '110': 'Forum', '111': 'Forum talk',
+    '100': 'Portal', '110': 'Forum', '111': 'Forum talk',
     '420': 'Gadget', '421': 'Gadget talk', '500': 'User blog', '501': 'User blog comment',
     '828': 'Module', '829': 'Module talk', '1200': 'Message Wall', '1201': 'Thread',
     '2000': 'Board', '2001': 'Board thread'
