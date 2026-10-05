@@ -35,6 +35,13 @@
     elements.detail.textContent = detail;
   }
 
+  function updateWikiName() {
+    const words = elements.wiki.value.trim().split(/[-_]+/).filter(Boolean);
+    const wikiName = words.map((word) => `${word[0].toUpperCase()}${word.slice(1)}`).join(' ');
+    $('#wiki-name').textContent = `${wikiName || 'Wiki'} Wiki`;
+    document.title = wikiName ? `Wiki Activity | ${wikiName} Wiki` : 'Wiki Activity';
+  }
+
   function setSyncPending(pending) {
     elements.spinner.hidden = !pending;
     for (const section of [elements.stats, elements.charts]) {
@@ -936,6 +943,7 @@
 
   async function initialize() {
     loadSettings();
+    updateWikiName();
     [elements.wiki, elements.mainUser, elements.botUser].forEach((input) => {
       input.addEventListener('change', saveSettings);
       input.addEventListener('keydown', (event) => {
@@ -944,6 +952,7 @@
         void syncAll(false);
       });
     });
+    elements.wiki.addEventListener('input', updateWikiName);
     elements.sync.addEventListener('click', () => syncAll(false));
     elements.fullSync.addEventListener('click', () => syncAll(true));
     $('#export-main-json').addEventListener('click', () => exportJson(elements.mainUser.value.trim()));
