@@ -559,7 +559,13 @@
     const yearlyLabels = activityGranularity === 'monthly' && monthSpan > 36;
 
     if (observedPeriods.length && activityGranularity === 'weekly') {
-      const date = new Date(`${firstPeriod}T00:00:00`);
+      const firstTimestamp = [...(main.contributions || []), ...(bot.contributions || [])].reduce((earliest, record) => {
+        const timestamp = Date.parse(record.timestamp);
+        return Number.isFinite(timestamp) ? Math.min(earliest, timestamp) : earliest;
+      }, Infinity);
+      const firstActiveDate = new Date(firstTimestamp);
+      const date = new Date(firstActiveDate.getFullYear(), 0, 1);
+      date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
       const endDate = new Date(`${lastPeriod}T00:00:00`);
       while (date <= endDate) {
         periods.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
