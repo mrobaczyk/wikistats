@@ -767,7 +767,7 @@
       context.fillText(day, left - 8, top + row * cellHeight + cellHeight / 2);
       for (let hour = 0; hour < 24; hour += 1) {
         const intensity = matrix[row][hour] / max;
-        context.fillStyle = intensity ? `rgba(23,109,84,${0.12 + intensity * 0.82})` : '#edf1ed';
+        context.fillStyle = intensity ? `rgba(23,109,84,${0.03 + intensity * 0.97})` : '#fff';
         context.beginPath();
         const x = left + hour * cellWidth + 1;
         const y = top + row * cellHeight + 1;
