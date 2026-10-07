@@ -853,7 +853,7 @@
       const x = left + column * step;
       const y = top + row * step;
       const intensity = count / maximum;
-      context.fillStyle = count === 0 ? '#edf1ed' : intensity > .65 ? '#176d54' : intensity > .3 ? '#69a98a' : intensity > .08 ? '#a9d0b8' : '#d8e9dd';
+      context.fillStyle = count ? `rgba(23,109,84,${0.03 + intensity * 0.97})` : '#fff';
       context.beginPath();
       context.roundRect(x, y, cellSize, cellSize, 2);
       context.fill();
